@@ -1,0 +1,56 @@
+{
+  "branches": ["main"],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "CHANGELOG.md"
+      }
+    ],
+    "semantic-release-pypi",
+    [
+      "@codedependant/semantic-release-docker",
+      {
+        "dockerImage": "freshservice-exporter",
+        "dockerRegistry": "ghcr.io",
+        "dockerProject": "polarpoint-io",
+        "dockerFile": "Dockerfile",
+        "dockerPlatform": ["linux/amd64", "linux/arm64"],
+        "dockerBuildArgs": {
+          "VERSION": "{{nextRelease.version}}"
+        },
+        "dockerTags": [
+          "{{major}}.{{minor}}.{{patch}}",
+          "{{major}}.{{minor}}",
+          "{{major}}"
+        ]
+      }
+    ],
+    [
+      "semantic-release-helm3",
+      {
+        "chartPath": "charts/freshservice-exporter",
+        "registry": "ghcr.io/polarpoint-io/charts",
+        "skipRegistryLogin": true
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          { "path": "dist/*.whl", "label": "Wheel" },
+          { "path": "dist/*.tar.gz", "label": "Source distribution" }
+        ]
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["pyproject.toml", "CHANGELOG.md", "charts/freshservice-exporter/Chart.yaml"],
+        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+      }
+    ]
+  ]
+}

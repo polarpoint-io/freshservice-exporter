@@ -2,7 +2,12 @@
 
 Prometheus exporter for [Freshservice](https://www.freshservice.com/) with a broad metric surface for **Grafana Cloud** — ITSM operations, SLA tracking, and DORA (MTTR, deployment frequency, change failure rate, lead time).
 
-[![CI](https://github.com/cfc-com/freshservice-exporter/actions/workflows/ci.yml/badge.svg)](https://github.com/cfc-com/freshservice-exporter/actions/workflows/ci.yml)
+[![CI](https://github.com/polarpoint-io/freshservice-exporter/actions/workflows/ci.yml/badge.svg)](https://github.com/polarpoint-io/freshservice-exporter/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/polarpoint-io/freshservice-exporter/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/polarpoint-io/freshservice-exporter/actions/workflows/codeql-analysis.yml)
+[![GHCR](https://img.shields.io/badge/ghcr.io-freshservice--exporter-blue?logo=github)](https://github.com/polarpoint-io/freshservice-exporter/pkgs/container/freshservice-exporter)
+[![Helm](https://img.shields.io/badge/Helm-ghcr.io%2Fpolarpoint--io%2Fcharts-blue?logo=helm)](https://github.com/polarpoint-io/freshservice-exporter/pkgs/container/charts%2Ffreshservice-exporter)
+
+> **PyPI**: `pip install freshservice-exporter` · **Image**: `ghcr.io/polarpoint-io/freshservice-exporter:latest` · **Chart**: `ghcr.io/polarpoint-io/charts/freshservice-exporter`
 
 ## Repository layout
 
@@ -188,25 +193,36 @@ make lint
 make scrape    # requires .env with API credentials
 ```
 
-## Publish to GitHub
-
-`gh` is not authenticated in all environments — run these locally:
+## Publish to GitHub (polarpoint-io)
 
 ```bash
 gh auth login
 
-# Create the repo (adjust org/name as needed)
-gh repo create cfc-com/freshservice-exporter --private --source=. --remote=origin
-
-git checkout -B main
-git add .
-git commit -m "Initial commit: Freshservice Prometheus exporter with DORA metrics"
+gh repo create polarpoint-io/freshservice-exporter --private --source=. --remote=origin
 git push -u origin main
 ```
 
-Update `charts/freshservice-exporter/values.yaml` `image.repository` after your GHCR path is known.
+### Required GitHub secrets
+
+Add these at **GitHub repo → Settings → Secrets and variables → Actions**:
+
+| Secret | Description |
+|---|---|
+| `POL_GH_TOKEN` | PAT with `repo` + `write:packages` scope (semantic-release) |
+| `PYPI_TOKEN` | PyPI API token for `freshservice-exporter` |
 
 ## Helm
+
+```bash
+helm registry login ghcr.io --username <github-user> --password <github-pat>
+
+helm install freshservice-exporter oci://ghcr.io/polarpoint-io/charts/freshservice-exporter \
+  --namespace monitoring --create-namespace \
+  --set freshservice.apiKey=<API_KEY> \
+  --set freshservice.domain=company.freshservice.com
+```
+
+Or install from the local chart during development:
 
 ```bash
 helm install freshservice-exporter ./charts/freshservice-exporter \

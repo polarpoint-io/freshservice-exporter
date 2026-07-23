@@ -11,5 +11,9 @@ keywords:
   - exporter
   - itsm
   - dora
+home: https://github.com/polarpoint-io/freshservice-exporter
+sources:
+  - https://github.com/polarpoint-io/freshservice-exporter
 maintainers:
-  - name: cfc
+  - name: polarpoint-io
+    url: https://github.com/polarpoint-io

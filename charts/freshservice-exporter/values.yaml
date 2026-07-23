@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/cfc-com/freshservice-exporter
+  repository: ghcr.io/polarpoint-io/freshservice-exporter
   pullPolicy: IfNotPresent
   tag: ""
 
