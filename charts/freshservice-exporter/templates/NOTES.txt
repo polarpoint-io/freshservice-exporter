@@ -1,0 +1,7 @@
+Freshservice exporter has been deployed.
+
+Metrics endpoint:
+  http://{{ include "freshservice-exporter.fullname" . }}.{{ .Release.Namespace }}.svc:{{ .Values.service.port }}/metrics
+
+Prometheus scrape annotations are set on the pod. Import the Grafana dashboard from:
+  dashboards/freshservice-dora.json

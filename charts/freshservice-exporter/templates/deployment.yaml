@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "freshservice-exporter.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "freshservice-exporter.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "freshservice-exporter.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "freshservice-exporter.selectorLabels" . | nindent 8 }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "freshservice-exporter.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: FRESHSERVICE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "freshservice-exporter.secretName" . }}
+                  key: api-key
+            - name: FRESHSERVICE_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "freshservice-exporter.secretName" . }}
+                  key: domain
+            - name: EXPORTER_PORT
+              value: {{ .Values.service.port | quote }}
+            - name: SCRAPE_INTERVAL
+              value: {{ .Values.freshservice.scrapeInterval | quote }}
+            - name: FRESHSERVICE_DORA_LOOKBACK_DAYS
+              value: {{ .Values.freshservice.lookbackDays | quote }}
+            - name: FRESHSERVICE_INCLUDE_STATS
+              value: {{ .Values.freshservice.includeStats | quote }}
+            - name: FRESHSERVICE_ENABLE_DORA
+              value: {{ .Values.freshservice.enableDora | quote }}
+            - name: FRESHSERVICE_ENABLE_RELEASES
+              value: {{ .Values.freshservice.enableReleases | quote }}
+            {{- if .Values.freshservice.workspaceId }}
+            - name: FRESHSERVICE_WORKSPACE_ID
+              value: {{ .Values.freshservice.workspaceId | quote }}
+            {{- end }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
