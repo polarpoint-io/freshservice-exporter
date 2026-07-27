@@ -1,5 +1,7 @@
 # freshservice-exporter
 
+![Freshservice Exporter — Prometheus metrics for Freshservice ITSM & DORA](docs/hero.png)
+
 Prometheus exporter for [Freshservice](https://www.freshservice.com/) with a broad metric surface for **Grafana Cloud** — ITSM operations, SLA tracking, and DORA (MTTR, deployment frequency, change failure rate, lead time).
 
 [![CI](https://github.com/polarpoint-io/freshservice-exporter/actions/workflows/ci.yml/badge.svg)](https://github.com/polarpoint-io/freshservice-exporter/actions/workflows/ci.yml)
@@ -21,6 +23,23 @@ Prometheus exporter for [Freshservice](https://www.freshservice.com/) with a bro
 ├── scripts/scrape_once.py   # One-shot local test scrape
 └── tests/
 ```
+
+## Installation
+
+From PyPI:
+
+```bash
+pip install freshservice-exporter
+```
+
+From GHCR:
+
+```bash
+docker run -e FRESHSERVICE_API_KEY=... -e FRESHSERVICE_DOMAIN=company.freshservice.com \
+  -p 9192:9192 ghcr.io/polarpoint-io/freshservice-exporter:latest
+```
+
+Image tags: `X.Y.Z` / `X.Y` / `X` (releases, installed from the matching PyPI package), `main` (latest snapshot), and `<version>-dev.<run>` / `<version>-dev-<sha>` (prerelease snapshots built from source).
 
 ## Quick start
 
@@ -209,7 +228,11 @@ Add these at **GitHub repo → Settings → Secrets and variables → Actions**:
 | Secret | Description |
 |---|---|
 | `POL_GH_TOKEN` | PAT with `repo` + `write:packages` scope (semantic-release) |
-| `PYPI_TOKEN` | PyPI API token for `freshservice-exporter` |
+| `PYPI_TOKEN` | PyPI API token for `freshservice-exporter` (semantic-release + release workflow) |
+
+### Release process
+
+Merges to `main` run semantic-release (`ci.yml`), which versions from conventional commits, publishes to PyPI, and creates a GitHub release. Publishing a release then triggers `release.yml`, which uploads to PyPI (idempotent, `--skip-existing`) and pushes the semver-tagged multi-arch image to GHCR built from the published package.
 
 ## Helm
 
