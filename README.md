@@ -6,6 +6,9 @@ Prometheus exporter for [Freshservice](https://www.freshservice.com/) with a bro
 
 [![CI](https://github.com/polarpoint-io/freshservice-exporter/actions/workflows/ci.yml/badge.svg)](https://github.com/polarpoint-io/freshservice-exporter/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/polarpoint-io/freshservice-exporter/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/polarpoint-io/freshservice-exporter/actions/workflows/codeql-analysis.yml)
+[![PyPI](https://img.shields.io/pypi/v/freshservice-exporter?logo=pypi&logoColor=white)](https://pypi.org/project/freshservice-exporter/)
+[![Python](https://img.shields.io/pypi/pyversions/freshservice-exporter?logo=python&logoColor=white)](https://pypi.org/project/freshservice-exporter/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![GHCR](https://img.shields.io/badge/ghcr.io-freshservice--exporter-blue?logo=github)](https://github.com/polarpoint-io/freshservice-exporter/pkgs/container/freshservice-exporter)
 [![Helm](https://img.shields.io/badge/Helm-ghcr.io%2Fpolarpoint--io%2Fcharts-blue?logo=helm)](https://github.com/polarpoint-io/freshservice-exporter/pkgs/container/charts%2Ffreshservice-exporter)
 
@@ -39,7 +42,13 @@ docker run -e FRESHSERVICE_API_KEY=... -e FRESHSERVICE_DOMAIN=company.freshservi
   -p 9192:9192 ghcr.io/polarpoint-io/freshservice-exporter:latest
 ```
 
-Image tags: `X.Y.Z` / `X.Y` / `X` (releases, installed from the matching PyPI package), `main` (latest snapshot), and `<version>-dev.<run>` / `<version>-dev-<sha>` (prerelease snapshots built from source).
+### Docker image tags
+
+| Tag | When pushed |
+|---|---|
+| `1.2.3` / `1.2` / `1` | On a published release, installed from the matching PyPI package |
+| `latest` / `main` | Every merge to `main` (snapshot, built from source) |
+| `<version>-dev.<run>` / `<version>-dev-<sha>` | Prerelease snapshots on every merge to `main` |
 
 ## Quick start
 
