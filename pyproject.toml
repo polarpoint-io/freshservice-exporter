@@ -25,6 +25,11 @@ dependencies = [
     "requests>=2.28.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/polarpoint-io/freshservice-exporter"
+Repository = "https://github.com/polarpoint-io/freshservice-exporter"
+Changelog = "https://github.com/polarpoint-io/freshservice-exporter/blob/main/CHANGELOG.md"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
