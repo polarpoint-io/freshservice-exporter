@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "freshservice-exporter"
-version = "0.1.0"
+version = "0.2.0"
 description = "Prometheus exporter for Freshservice ITSM metrics"
 readme = "README.md"
 requires-python = ">=3.11"
