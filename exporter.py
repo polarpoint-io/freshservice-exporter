@@ -8,8 +8,11 @@ from __future__ import annotations
 
 import logging
 import os
+import platform
 import time
 from datetime import UTC, datetime, timedelta
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as pkg_version
 from typing import Any, Iterable
 
 from prometheus_client import CollectorRegistry, start_http_server
@@ -24,6 +27,16 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
 )
 log = logging.getLogger("freshservice_exporter")
+
+
+def _exporter_version() -> str:
+    try:
+        return pkg_version("freshservice-exporter")
+    except PackageNotFoundError:
+        return "0.0.0-dev"
+
+
+EXPORTER_VERSION = _exporter_version()
 
 
 def _truthy(value: str | None, *, default: bool = True) -> bool:
@@ -43,9 +56,11 @@ class FreshserviceCollector:
         self.client = client
         self.config = config
         self._snapshot: MetricsSnapshot | None = None
+        self._start_time = time.time()
         self._last_scrape_timestamp = 0.0
         self._last_scrape_duration = 0.0
         self._last_scrape_success = 0
+        self._scrapes = 0
         self._api_errors = 0
 
     def _fetch_all(self) -> MetricsSnapshot:
@@ -112,6 +127,7 @@ class FreshserviceCollector:
         self._last_scrape_duration = time.monotonic() - started
         self._last_scrape_timestamp = time.time()
         self._last_scrape_success = scrape_ok
+        self._scrapes += 1
 
         snap = self._snapshot
         if snap is None:
@@ -500,6 +516,32 @@ class FreshserviceCollector:
         )
 
     def _emit_diagnostics(self) -> Iterable[GaugeMetricFamily]:
+        yield gauge(
+            "freshservice_exporter_up",
+            "1 while the exporter process is running and serving metrics",
+            1.0,
+        )
+        yield labeled_gauge(
+            "freshservice_exporter_build_info",
+            "Exporter build information (constant 1)",
+            ["version", "python_version"],
+            {(EXPORTER_VERSION, platform.python_version()): 1.0},
+        )
+        yield gauge(
+            "freshservice_exporter_start_time_seconds",
+            "Unix timestamp when the exporter process started",
+            self._start_time,
+        )
+        yield gauge(
+            "freshservice_exporter_uptime_seconds",
+            "Seconds since the exporter process started",
+            time.time() - self._start_time,
+        )
+        yield gauge(
+            "freshservice_exporter_scrapes_total",
+            "Number of scrape cycles completed since process start",
+            float(self._scrapes),
+        )
         yield gauge(
             "freshservice_exporter_last_scrape_timestamp",
             "Unix timestamp of the last completed scrape",

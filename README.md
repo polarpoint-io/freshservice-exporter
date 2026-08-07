@@ -194,6 +194,11 @@ sum by (priority) (freshservice_tickets_open_by_priority_total)
 
 | Metric | Description |
 |---|---|
+| `freshservice_exporter_up` | 1 while the exporter is running and serving metrics |
+| `freshservice_exporter_build_info` | Constant 1 with `version` and `python_version` labels |
+| `freshservice_exporter_start_time_seconds` | Unix timestamp of process start |
+| `freshservice_exporter_uptime_seconds` | Seconds since process start |
+| `freshservice_exporter_scrapes_total` | Scrape cycles since process start |
 | `freshservice_exporter_last_scrape_timestamp` | Last scrape unix time |
 | `freshservice_exporter_last_scrape_duration_seconds` | Scrape duration |
 | `freshservice_exporter_last_scrape_successful` | 1 = OK |
