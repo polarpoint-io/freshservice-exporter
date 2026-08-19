@@ -12,10 +12,16 @@ def _ts(days_ago: float) -> str:
 
 
 class FakeClient:
+    def __init__(self) -> None:
+        self.last_ticket_params: dict | None = None
+        self.last_change_params: dict | None = None
+
     def list_tickets(self, **params):
+        self.last_ticket_params = params
         return iter(self._tickets())
 
     def list_changes(self, **params):
+        self.last_change_params = params
         return iter(self._changes())
 
     def list_problems(self, **params):
@@ -149,3 +155,29 @@ def test_collector_records_api_failure():
     list(collector.collect())
     assert collector._last_scrape_success == 0
     assert collector._api_errors == 1
+
+
+def test_include_stats_applies_to_tickets_only():
+    client = FakeClient()
+    config = {
+        "workspace_id": None,
+        "updated_since": _ts(30),
+        "enable_tickets": True,
+        "enable_changes": True,
+        "enable_problems": False,
+        "enable_assets": False,
+        "enable_dora": True,
+        "enable_releases": False,
+        "include_stats": True,
+        "lookback_days": 30,
+        "mttr_ticket_types": "Incident",
+        "closed_change_status": 6,
+    }
+    collector = FreshserviceCollector(client, config)
+    list(collector.collect())
+
+    assert client.last_ticket_params is not None
+    assert client.last_change_params is not None
+    assert client.last_ticket_params.get("include") == "stats"
+    assert "include" not in client.last_change_params
+    assert collector._last_scrape_success == 1
