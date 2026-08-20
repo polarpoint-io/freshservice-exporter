@@ -67,8 +67,13 @@ class FreshserviceCollector:
         params = _workspace_params(self.config.get("workspace_id"))
         if self.config.get("updated_since"):
             params["updated_since"] = self.config["updated_since"]
+
+        # include=stats is valid on ticket list/view APIs only. Passing it to
+        # /changes (or /problems, /releases) returns HTTP 400 invalid_field,
+        # which fails the whole scrape and drops ticket metrics too.
+        ticket_params = dict(params)
         if self.config.get("include_stats"):
-            params["include"] = "stats"
+            ticket_params["include"] = "stats"
 
         tickets: list[dict[str, Any]] = []
         changes: list[dict[str, Any]] = []
@@ -78,7 +83,7 @@ class FreshserviceCollector:
 
         if self.config["enable_tickets"] or self.config["enable_dora"]:
             log.info("Fetching tickets …")
-            tickets = self.client.collect_list(self.client.list_tickets, **params)
+            tickets = self.client.collect_list(self.client.list_tickets, **ticket_params)
 
         if self.config["enable_changes"] or self.config["enable_dora"]:
             log.info("Fetching changes …")
