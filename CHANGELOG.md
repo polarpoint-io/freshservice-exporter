@@ -1,3 +1,10 @@
+## [0.2.1](https://github.com/polarpoint-io/freshservice-exporter/compare/v0.2.0...v0.2.1) (2026-08-20)
+
+
+### Bug Fixes
+
+* scope include=stats to ticket list requests only ([af2d18d](https://github.com/polarpoint-io/freshservice-exporter/commit/af2d18d89c50c8f1420803801e4f3b65b1746705))
+
 # [0.2.0](https://github.com/polarpoint-io/freshservice-exporter/compare/v0.1.0...v0.2.0) (2026-08-07)
 
 
