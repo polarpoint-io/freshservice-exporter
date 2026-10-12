@@ -1,3 +1,10 @@
+# [0.3.0](https://github.com/polarpoint-io/freshservice-exporter/compare/v0.2.1...v0.3.0) (2026-10-12)
+
+
+### Features
+
+* export Freshservice release management dimensions ([078e24a](https://github.com/polarpoint-io/freshservice-exporter/commit/078e24a2270b80bcf1542cc21109530359757817))
+
 ## [0.2.1](https://github.com/polarpoint-io/freshservice-exporter/compare/v0.2.0...v0.2.1) (2026-08-20)
 
 
