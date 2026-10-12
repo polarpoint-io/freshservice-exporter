@@ -154,13 +154,28 @@ sum by (priority) (freshservice_tickets_open_by_priority_total)
 | `freshservice_releases_by_type_total` | `release_type` | minor / standard / major / emergency |
 | `freshservice_releases_by_priority_total` | `priority` | Priority |
 | `freshservice_releases_by_type_status_total` | `release_type`, `status` | Cross-tab |
+| `freshservice_releases_by_group_total` | `group_id` | Assignment group |
+| `freshservice_releases_by_department_total` | `department_id` | Department initiating the release |
+| `freshservice_releases_by_category_total` | `category` | Category |
+| `freshservice_releases_by_workspace_total` | `workspace_id` | Workspace |
 | `freshservice_releases_open_by_type_total` | `release_type` | In-flight releases |
 | `freshservice_releases_open_age_bucket_total` | `bucket` | Age of open releases |
 | `freshservice_releases_overdue_open_total` | — | Past `planned_end_date` |
+| `freshservice_releases_unassigned_open_total` | — | Open releases with no agent |
+| `freshservice_releases_emergency_open_total` | — | Open emergency releases |
+| `freshservice_releases_linked_to_changes_total` | — | Releases linked to at least one change |
+| `freshservice_release_associated_changes_total` | — | Linked change records |
+| `freshservice_releases_missing_build_plan_open_total` | — | Open releases with an empty build plan |
+| `freshservice_releases_missing_test_plan_open_total` | — | Open releases with an empty test plan |
 | `freshservice_releases_completed_in_window_total` | `release_type` | Successful deployments |
 | `freshservice_releases_failed_in_window_total` | `release_type` | Failed (incomplete) deployments |
+| `freshservice_releases_late_in_window_total` | `release_type` | Completed after `planned_end_date` |
 | `freshservice_release_work_duration_seconds_sum` | `release_type` | work_end − work_start sum |
 | `freshservice_release_work_duration_seconds_count` | `release_type` | work_end − work_start count |
+| `freshservice_release_cycle_duration_seconds_sum` | `release_type` | created → completion sum |
+| `freshservice_release_cycle_duration_seconds_count` | `release_type` | created → completion count |
+| `freshservice_release_schedule_slip_seconds_sum` | `release_type` | work_end − planned_end sum |
+| `freshservice_release_schedule_slip_seconds_count` | `release_type` | work_end − planned_end count |
 
 ### Problems
 

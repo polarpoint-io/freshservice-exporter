@@ -375,6 +375,30 @@ class FreshserviceCollector:
             s.releases_by_type_status,
         )
         yield labeled_gauge(
+            "freshservice_releases_by_group_total",
+            "Releases by assignment group",
+            ["group_id"],
+            s.releases_by_group,
+        )
+        yield labeled_gauge(
+            "freshservice_releases_by_department_total",
+            "Releases by department",
+            ["department_id"],
+            s.releases_by_department,
+        )
+        yield labeled_gauge(
+            "freshservice_releases_by_category_total",
+            "Releases by category",
+            ["category"],
+            s.releases_by_category,
+        )
+        yield labeled_gauge(
+            "freshservice_releases_by_workspace_total",
+            "Releases by workspace",
+            ["workspace_id"],
+            s.releases_by_workspace,
+        )
+        yield labeled_gauge(
             "freshservice_releases_open_by_type_total",
             "Open releases by type",
             ["release_type"],
@@ -391,6 +415,36 @@ class FreshserviceCollector:
             "Open releases past planned_end_date",
             s.releases_overdue_open,
         )
+        yield gauge(
+            "freshservice_releases_unassigned_open_total",
+            "Open releases with no assigned agent",
+            s.releases_unassigned_open,
+        )
+        yield gauge(
+            "freshservice_releases_emergency_open_total",
+            "Open emergency releases",
+            s.releases_emergency_open,
+        )
+        yield gauge(
+            "freshservice_releases_linked_to_changes_total",
+            "Releases linked to at least one change",
+            s.releases_linked_to_changes,
+        )
+        yield gauge(
+            "freshservice_release_associated_changes_total",
+            "Change records linked from releases",
+            s.release_associated_changes,
+        )
+        yield gauge(
+            "freshservice_releases_missing_build_plan_open_total",
+            "Open releases with an empty build plan",
+            s.releases_missing_build_plan_open,
+        )
+        yield gauge(
+            "freshservice_releases_missing_test_plan_open_total",
+            "Open releases with an empty test plan",
+            s.releases_missing_test_plan_open,
+        )
         yield labeled_gauge(
             "freshservice_releases_completed_in_window_total",
             "Completed releases in the lookback window",
@@ -403,12 +457,32 @@ class FreshserviceCollector:
             ["release_type"],
             s.releases_failed_in_window,
         )
+        yield labeled_gauge(
+            "freshservice_releases_late_in_window_total",
+            "Completed releases whose work ended after planned_end_date",
+            ["release_type"],
+            s.releases_late_in_window,
+        )
         yield from sum_count_pair(
             "freshservice_release_work_duration_seconds",
             "Release work duration (work_end_date - work_start_date)",
             ["release_type"],
             s.release_work_duration_seconds_sum,
             s.release_work_duration_seconds_count,
+        )
+        yield from sum_count_pair(
+            "freshservice_release_cycle_duration_seconds",
+            "Release cycle time (work end or completion - created_at)",
+            ["release_type"],
+            s.release_cycle_seconds_sum,
+            s.release_cycle_seconds_count,
+        )
+        yield from sum_count_pair(
+            "freshservice_release_schedule_slip_seconds",
+            "Release schedule slip (work_end_date - planned_end_date)",
+            ["release_type"],
+            s.release_schedule_slip_seconds_sum,
+            s.release_schedule_slip_seconds_count,
         )
 
     def _emit_problems(self, s: MetricsSnapshot) -> Iterable[GaugeMetricFamily]:

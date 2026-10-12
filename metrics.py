@@ -34,6 +34,26 @@ def _inc(table: dict, key, amount: int = 1) -> None:
     table[key] = table.get(key, 0) + amount
 
 
+def _associated_change_ids(release: dict[str, Any]) -> list[Any]:
+    raw = release.get("associated_changes")
+    if raw is None:
+        raw = release.get("associated_change_ids")
+    if not isinstance(raw, list):
+        return []
+    return [item for item in raw if item not in (None, "", 0)]
+
+
+def _plan_blank(planning_fields: object, key: str) -> bool | None:
+    """True when a release plan is empty. None when the API omitted planning_fields."""
+    if not isinstance(planning_fields, dict):
+        return None
+    plan = planning_fields.get(key)
+    if not isinstance(plan, dict):
+        return True
+    text = plan.get("description") or plan.get("description_text") or ""
+    return not str(text).strip()
+
+
 def _add_sum_count(
     sums: dict,
     counts: dict,
@@ -99,13 +119,28 @@ class MetricsSnapshot:
     releases_by_type: dict[str, int] = field(default_factory=dict)
     releases_by_priority: dict[str, int] = field(default_factory=dict)
     releases_by_type_status: dict[tuple[str, str], int] = field(default_factory=dict)
+    releases_by_group: dict[str, int] = field(default_factory=dict)
+    releases_by_department: dict[str, int] = field(default_factory=dict)
+    releases_by_category: dict[str, int] = field(default_factory=dict)
+    releases_by_workspace: dict[str, int] = field(default_factory=dict)
     releases_open_by_type: dict[str, int] = field(default_factory=dict)
     releases_open_age_bucket: dict[str, int] = field(default_factory=dict)
     releases_overdue_open: int = 0
+    releases_unassigned_open: int = 0
+    releases_emergency_open: int = 0
+    releases_linked_to_changes: int = 0
+    release_associated_changes: int = 0
+    releases_missing_build_plan_open: int = 0
+    releases_missing_test_plan_open: int = 0
     releases_completed_in_window: dict[str, int] = field(default_factory=dict)
     releases_failed_in_window: dict[str, int] = field(default_factory=dict)
+    releases_late_in_window: dict[str, int] = field(default_factory=dict)
     release_work_duration_seconds_sum: dict[str, float] = field(default_factory=dict)
     release_work_duration_seconds_count: dict[str, int] = field(default_factory=dict)
+    release_cycle_seconds_sum: dict[str, float] = field(default_factory=dict)
+    release_cycle_seconds_count: dict[str, int] = field(default_factory=dict)
+    release_schedule_slip_seconds_sum: dict[str, float] = field(default_factory=dict)
+    release_schedule_slip_seconds_count: dict[str, int] = field(default_factory=dict)
 
     # Problems
     problems_total: int = 0
@@ -272,28 +307,68 @@ def aggregate_metrics(
         release_type = label(RELEASE_TYPE, release.get("release_type"))
         priority = label(TICKET_PRIORITY, release.get("priority"))
         status_code = int(release.get("status", 0))
+        type_code = int(release.get("release_type") or 0)
+        group = optional_id(release.get("group_id"))
+        department = optional_id(release.get("department_id"))
+        workspace = optional_id(release.get("workspace_id"))
+        category = str(release.get("category") or UNKNOWN).lower()
 
         _inc(snap.releases_by_status, status)
         _inc(snap.releases_by_type, release_type)
         _inc(snap.releases_by_priority, priority)
         _inc(snap.releases_by_type_status, (release_type, status))
+        _inc(snap.releases_by_group, group)
+        _inc(snap.releases_by_department, department)
+        _inc(snap.releases_by_category, category)
+        _inc(snap.releases_by_workspace, workspace)
 
         created_at = parse_ts(release.get("created_at"))
         planned_end = parse_ts(release.get("planned_end_date"))
         work_start = parse_ts(release.get("work_start_date"))
         work_end = parse_ts(release.get("work_end_date"))
         completed_at = work_end or parse_ts(release.get("updated_at")) or created_at
+        linked_changes = _associated_change_ids(release)
+        if linked_changes:
+            snap.releases_linked_to_changes += 1
+            snap.release_associated_changes += len(linked_changes)
 
         if status_code in OPEN_RELEASE_STATUSES:
             _inc(snap.releases_open_by_type, release_type)
+            if type_code == 4:
+                snap.releases_emergency_open += 1
+            if not release.get("agent_id"):
+                snap.releases_unassigned_open += 1
             if planned_end and planned_end < now:
                 snap.releases_overdue_open += 1
             if created_at:
                 _inc(snap.releases_open_age_bucket, age_bucket((now - created_at).total_seconds()))
+            planning = release.get("planning_fields")
+            if _plan_blank(planning, "build_plan"):
+                snap.releases_missing_build_plan_open += 1
+            if _plan_blank(planning, "test_plan"):
+                snap.releases_missing_test_plan_open += 1
 
         if completed_at and completed_at >= window_start:
             if status_code == 5:
                 _inc(snap.releases_completed_in_window, release_type)
+                cycle_end = work_end or completed_at
+                if created_at and cycle_end >= created_at:
+                    _add_sum_count(
+                        snap.release_cycle_seconds_sum,
+                        snap.release_cycle_seconds_count,
+                        release_type,
+                        (cycle_end - created_at).total_seconds(),
+                    )
+                if work_end and planned_end:
+                    slip = (work_end - planned_end).total_seconds()
+                    _add_sum_count(
+                        snap.release_schedule_slip_seconds_sum,
+                        snap.release_schedule_slip_seconds_count,
+                        release_type,
+                        slip,
+                    )
+                    if slip > 0:
+                        _inc(snap.releases_late_in_window, release_type)
             elif status_code == 4:
                 _inc(snap.releases_failed_in_window, release_type)
 
